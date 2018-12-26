@@ -16,6 +16,7 @@ class Card():
             'd': 4,  # diamonds
             'c': 8,  # clubs
         }
+        self.card_suit_to_string = {1:'s',2:'h',4:'d',8:'c'}
         self.INT_SUIT_TO_CHAR_SUIT = 'xshxdxxxc'
 
         # for pretty printing
@@ -126,11 +127,12 @@ class Card():
         rank_int = self.get_rank_int(card_int)
 
         # if we need to color red
-        s = self.PRETTY_SUITS[suit_int]
-        if color and suit_int in self.PRETTY_REDS:
-            s = colored(s, "red")
+        # s = self.PRETTY_SUITS[suit_int]
+        # if color and suit_int in self.PRETTY_REDS:
+        #     s = colored(s, "red")
+        s = self.card_suit_to_string[suit_int]
         r = self.STR_RANKS[rank_int]
-        return " [ " + r + " " + s + " ] "
+        return r + s
 
     def print_pretty_card(self,card_int):
         """
@@ -153,6 +155,6 @@ class Card():
         print(output)
 
 # test
-if __name__ == "__main__":
-    card = Card()
-    print(card.new("As"))
+# if __name__ == "__main__":
+#     card = Card()
+#     print(card.new("As"))

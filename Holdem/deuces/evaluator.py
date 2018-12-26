@@ -50,7 +50,7 @@ class Evaluator(object):
 
         # otherwise
         else:
-            prime = Card.prime_product_from_hand(cards)
+            prime = self.card.prime_product_from_hand(cards)
             return self.table.unsuited_lookup[prime]
 
     def _six(self, cards):

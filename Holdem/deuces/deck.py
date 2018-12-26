@@ -9,6 +9,7 @@ class Deck():
         # self.shuffle()
         self._FULL_DECK = []
         self.card = Card()
+        self.shuffle()
 
     # 打乱牌的顺序
     def shuffle(self):
@@ -41,8 +42,8 @@ class Deck():
         return list(self._FULL_DECK)
 
 # test
-if __name__ == "__main__":
-    deck = Deck()
-    deck.shuffle()
-    print(deck.draw(1))
-    print(deck.draw(2))
+# if __name__ == "__main__":
+#     deck = Deck()
+#     deck.shuffle()
+#     print(deck.draw(1))
+#     print(deck.draw(2))

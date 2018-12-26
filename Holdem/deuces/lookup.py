@@ -63,6 +63,7 @@ class LookupTable(object):
         Calculates lookup tables
         """
         # create dictionaries
+        self.card = Card()
         self.flush_lookup = {}
         self.unsuited_lookup = {}
 
@@ -70,7 +71,6 @@ class LookupTable(object):
         self.flushes()  # this will call straights and high cards method,
         # we reuse some of the bit sequences
         self.multiples()
-        self.card = Card()
 
     def flushes(self):
         """
@@ -167,7 +167,7 @@ class LookupTable(object):
         """
         Pair, Two Pair, Three of a Kind, Full House, and 4 of a Kind.
         """
-        backwards_ranks = range(len(self.card.INT_RANKS) - 1, -1, -1)
+        backwards_ranks = list(range(len(self.card.INT_RANKS) - 1, -1, -1))
 
         # 1) Four of a Kind
         rank = LookupTable.MAX_STRAIGHT_FLUSH + 1
@@ -262,9 +262,9 @@ class LookupTable(object):
         so no need to sort when done! Perfect.
         """
         t = (bits | (bits - 1)) + 1
-        next = t | ((((t & -t) / (bits & -bits)) >> 1) - 1)
+        next = t | ((((t & -t) // (bits & -bits)) >> 1) - 1)
         yield next
         while True:
             t = (next | (next - 1)) + 1
-            next = t | ((((t & -t) / (next & -next)) >> 1) - 1)
+            next = t | ((((t & -t) // (next & -next)) >> 1) - 1)
             yield next
