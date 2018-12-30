@@ -18,17 +18,17 @@ def simulate(table, nHands, firstTrain=0, nTrain=0, nBuyIn=0, tPrint=5, vocal=Fa
 
     print('Beginning simulation of', nHands, 'hands.')
 
-    players = table.getPlayers()
-    bankroll = [[] for p in players]  # holds bankroll history of all players
-    maxBuyIn = table.getParams()[-1]
+    players = table.getPlayers() # 获得双方玩家
+    bankroll = [[] for p in players]  # holds bankroll history of all players 所有玩家所持有的筹码数
+    maxBuyIn = table.getParams()[-1]  # 玩家的最大押注筹码
 
-    # set Player stack sizes to max buy-in or less
+    # set Player stack sizes to max buy-in or less 设置玩家的stack，不能小于max buy in，即游戏开始双方玩家都加注maxBuyIn= 200
     for p in players:
         p.cashOut()
         if p.getStack() < maxBuyIn:
             p.buyChips(maxBuyIn)
 
-    nextTrain = firstTrain  # next hand players will train
+    nextTrain = firstTrain  # next hand players will train # 表示从多少局开始训练
     if firstTrain == 0:
         nextTrain = nTrain
     nextBuyIn = nBuyIn  # next hand players will cash out and buy in

@@ -11,6 +11,8 @@ if __name__ == '__main__':
     for i in range(2):
         # r表示回归算法
         # name表示玩家的名字
+        # nRaises 表示抽象的动作数，即加注动作数包括全押
+        # rFactor 表示加注动作之间相差的比例关系
         r = GradientBoostingRegressor() # 随机梯度boosting回归，即r表示回归算法
         name = 'Player ' + str(i + 1)
         p = BasicPlayer(name=name, reg=r, bankroll=10 ** 6, nRaises=10, rFactor=.7, memory=10 ** 5)

@@ -15,7 +15,7 @@ class Table:
 
         """ Constructor accepts  blinds and maximum table buy in as integers. """
 
-        self._players = []  # players at the table
+        self._players = []  # players at the table 游戏中的玩家数
         self._playing = []  # players who are not bankrupt
         self._sitOut = []  # players who have gone bankrupt
         self._dealer = 0  # position of dealer in self._playing
@@ -23,9 +23,9 @@ class Table:
 
         if type(smallBlind) != int or type(bigBlind) != int or type(maxBuyIn) != int:
             raise Exception('Parameters must be integer number of chips.')
-        self._smallBlind = smallBlind
-        self._bigBlind = bigBlind
-        self._maxBuyIn = maxBuyIn
+        self._smallBlind = smallBlind # 小盲注
+        self._bigBlind = bigBlind # 大盲注
+        self._maxBuyIn = maxBuyIn # 最大押注筹码
 
     def addPlayer(self, player):
 
@@ -46,7 +46,8 @@ class Table:
                 self._playing.append(p)
                 self._sitOut.remove(p)
 
-        if len(self._playing) <= 1: return False
+        if len(self._playing) <= 1:
+            return False
 
         # reset table game state before hand
         self._s = GameState(self._playing)
@@ -59,7 +60,8 @@ class Table:
         self._flip(1)
         self._flip(1)
         self._payWinners()
-        for p in self._playing: p.endHand()
+        for p in self._playing:
+            p.endHand()
 
         # find next dealer
         dealerPos = (self._dealer + 1) % self._s.numP
@@ -75,9 +77,11 @@ class Table:
 
         # move dealer chip
         self._dealer = 0
-        while self._playing[self._dealer] != dealer: self._dealer = (self._dealer + 1) % self._s.numP
+        while self._playing[self._dealer] != dealer:
+            self._dealer = (self._dealer + 1) % self._s.numP
 
-        if vocal: print("---")
+        if vocal:
+            print("---")
         return True
 
     def _generateDeck(self):
@@ -290,12 +294,14 @@ class Table:
 
         elif action[0] == 'call':
             toCall = self._s.toCall
-            if toCall == 0: raise Exception('Player called a bet of 0 chips. Did you mean to check?')
+            if toCall == 0:
+                raise Exception('Player called a bet of 0 chips. Did you mean to check?')
             stack = player.getStack()
             if stack <= toCall:  # player has all-in called
                 self._s.currBets[actor] += stack
                 player.removeChips(stack)
-                if self._vocal: print(player.getName(), 'all-in calls with', stack)
+                if self._vocal:
+                    print(player.getName(), 'all-in calls with', stack)
                 self._s.allIn.append(actor)
             else:
                 self._s.currBets[actor] = m
@@ -307,7 +313,8 @@ class Table:
             raiseBy = raiseTo - m  # change in maximum bet in pot
             # if action[0] == 'bet' and m > 0: raise Exception('Cannot bet when pot has been opened. Did you mean to raise?')
             # if action[0] == 'raise' and m == 0: raise Exception('Cannot raise when pot is unopened. Did you mean to bet?')
-            if raiseTo < self._s.minRaise: raise Exception('Raise amount is less than minimum raise.')
+            if raiseTo < self._s.minRaise:
+                raise Exception('Raise amount is less than minimum raise.')
             self._s.minRaise = raiseTo + raiseBy  # player must raise by twice as much as last raise
             self._s.currBets[actor] = raiseTo
             player.removeChips(raiseTo - currentBet)

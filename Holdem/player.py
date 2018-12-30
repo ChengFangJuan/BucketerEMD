@@ -18,15 +18,15 @@ class Player():
         rFactor - each raise choice is rFactor times the next largest raise choice (float)
         reg - machine learning regressor, must be sklearn or implement 'fit' and 'predict'
         """
-        self._name = name  # for distinction from other players
+        self._name = name  # for distinction from other players 玩家的名字
         self._fit = False  # True when self._reg has been fit
-        self._bankroll = bankroll  # total wealth of player
-        self._stack = 0  # chips that player has on table
-        self._features = []  # features associated with each gameState seen
-        self._stacks = []  # stack size at each time that features are recorded
-        self._labels = []  # result of each hand played
-        self._memory = memory  # max number of features, stacks, and labels to store
-        self._reg = reg  # machine learning regressor which predicts return on action
+        self._bankroll = bankroll  # total wealth of player 玩家的总筹码
+        self._stack = 0  # chips that player has on table 玩家本局押注筹码
+        self._features = []  # features associated with each gameState seen 观测到的游戏状态
+        self._stacks = []  # stack size at each time that features are recorded 记录每次决策的押注筹码
+        self._labels = []  # result of each hand played 每局游戏的结果
+        self._memory = memory  # max number of features, stacks, and labels to store 记忆库中保存的状态总数
+        self._reg = reg  # machine learning regressor which predicts return on action 预测动作的机器学习算法
         self._train = True  # player will not update regressor if self._train is False
 
         if rFactor == None and nRaises != 1:
@@ -36,7 +36,7 @@ class Player():
         self._rChoices = [1]
         for i in range(nRaises - 1):
             self._rChoices = [self._rChoices[0] * rFactor] + self._rChoices
-
+    # 执行押注动作，newStack表示加注到newStack，bankroll表示玩家拥有的筹码数
     def buyChips(self, newStack):
 
         """ This method moves chips to player's bankroll such that player's stack is 'newStack'. """
@@ -46,12 +46,12 @@ class Player():
 
         if newStack < self._stack:
             raise Exception('Requested stack is smaller than old stack.')
-        move = newStack - self._stack
+        move = newStack - self._stack # 表示本次动作加注多少
         self._bankroll -= move
         self._stack += move
 
         return True
-
+    # 游戏结束后计算玩家的收支
     def cashOut(self):
         self._bankroll += self._stack
         self._stack = 0
@@ -177,7 +177,7 @@ class Player():
 
     def show(self):
         return self._cards
-
+    # 获得玩家本局目前的押注筹码
     def getStack(self):
         return self._stack
 
