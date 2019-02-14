@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
-suit_count = 2
+suit_count = 4
 
-rank_count = 6
+rank_count = 13
 
 card_count = suit_count * rank_count
 
