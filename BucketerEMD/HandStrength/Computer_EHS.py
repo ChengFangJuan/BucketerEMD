@@ -7,17 +7,9 @@ from matplotlib.table import Table
 from BucketerEMD.card_to_string_conversion import CARD_TO_STRING
 import BucketerEMD.settings as settings
 from BucketerEMD.judging import judging
-from CFR.cfr import Game
 import random
 import copy
 card_to_string = CARD_TO_STRING()
-Game = Game()
-label = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
-rank_index_map = {'A': 0, 'K': 1, 'Q': 2,
-'J': 3, 'T': 4, '9': 5,
-'8': 6, '7': 7, '6': 8,
-'5': 9, '4': 10, '3': 11, '2': 12}
-
 
 def computer_EHS(card, sample_count):
     win_count = 0
@@ -48,7 +40,6 @@ def computer_EHS(card, sample_count):
     print("win_rate:", win_rate)
     print("draw_rate:", draw_rate)
     print("EHS:", EHS)
-
     return EHS
 
 def get_all_cards():
@@ -80,57 +71,36 @@ def get_color(frequency_old):
         return 'orangered'
     else:
         return 'red'
-def simplify_hand(hand):
-    rank1 = hand[0][0]
-    suit1 = hand[0][1]
-    rank2 = hand[1][0]
-    suit2 = hand[1][1]
-    if rank1 == rank2:
-        return rank1 + rank2
-
-    hand = Game.get_higher_rank(rank1, rank2)
-    hand += rank2 if hand==rank1 else rank1
-    hand += 's' if suit1==suit2 else 'o'
-    return hand
-
-def get_result(sample_count):
-    frequencies = dict()
-    all_cards = get_all_cards()
-    for card1 in all_cards:
-        for card2 in all_cards:
-            id = simplify_hand([card1,card2])
-            if card1 == card2:
-                frequencies[id] = 0.0
-            else:
-                frequencies[id] = computer_EHS([card1,card2], sample_count) * 100
-    return frequencies
-
 
 def plot_show(sample_count):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(25,25))
     ax.set_axis_off()
     tb = Table(ax, bbox=[0, 0, 1, 1])
+    all_cards = get_all_cards()
 
-    nrows, ncols = len(label), len(label)
+    # nrows, ncols = len(label), len(label)
+    nrows, ncols = len(all_cards), len(all_cards)
     width, height = 1.0 / ncols, 1.0 / nrows
 
     # Add cells
-    frequencies = get_result(sample_count)
-    for hand, val in frequencies.items():
-        i, j = rank_index_map[hand[0]], rank_index_map[hand[1]]
-        if len(hand) == 3 and hand[2] == 'o':
-            i, j = j, i
-        color = get_color(val)
-        tb.add_cell(i + 1, j, width, height, text=str(round(val,2)),
-                    loc='center', facecolor=color)
+    for i in range(len(all_cards)):
+        for j in range(len(all_cards)):
+            if all_cards[i] == all_cards[j]:
+                EHS_value = 0.0
+            else:
+                EHS_value = computer_EHS([all_cards[i], all_cards[j]], sample_count) * 100
+
+            color = get_color(EHS_value)
+            tb.add_cell(i+1, j, width, height, text=str(int(EHS_value)),
+                        loc='center', facecolor=color)
 
     # Row Labels...
-    for i in range(len(label)):
-        tb.add_cell(i + 1, -1, width, height, text=label[i], loc='right',
+    for i in range(len(all_cards)):
+        tb.add_cell(i + 1, -1, width, height, text=all_cards[i], loc='right',
                     edgecolor='none', facecolor='none')
     # Column Labels...
-    for j in range(len(label)):
-        tb.add_cell(0, j, width, height / 2, text=label[j], loc='center',
+    for j in range(len(all_cards)):
+        tb.add_cell(0, j, width, height / 2, text=all_cards[j], loc='center',
                     edgecolor='none', facecolor='none')
     ax.add_table(tb)
     plt.title("EHS")
@@ -141,4 +111,4 @@ def plot_show(sample_count):
 if __name__ == "__main__":
     card = ["Ah", "Qs"]
     # EHS = computer_EHS(card, 10000)
-    plot_show(10000)
+    plot_show(1000)
