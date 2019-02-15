@@ -59,15 +59,15 @@ def list_to_string(list1):
 
 def get_color(frequency_old):
     frequency = frequency_old / 100
-    if frequency >= 0.9:
+    if frequency >= 0.80:
         return 'green'
-    elif frequency >= 0.75:
+    elif frequency >= 0.65:
         return 'yellowgreen'
-    elif frequency >= 0.5:
+    elif frequency >= 0.50:
         return 'yellow'
-    elif frequency >= 0.25:
+    elif frequency >= 0.35:
         return 'orange'
-    elif frequency >= 0.05:
+    elif frequency >= 0.20:
         return 'orangered'
     else:
         return 'red'
@@ -111,4 +111,4 @@ def plot_show(sample_count):
 if __name__ == "__main__":
     card = ["Ah", "Qs"]
     # EHS = computer_EHS(card, 10000)
-    plot_show(1000)
+    plot_show(10000)
