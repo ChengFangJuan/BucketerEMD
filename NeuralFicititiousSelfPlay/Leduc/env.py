@@ -4,14 +4,15 @@ import logging
 from NeuralFicititiousSelfPlay.Leduc.deck import Deck
 import numpy as np
 import configparser
+import NeuralFicititiousSelfPlay.utils.arguments as arguments
 
 class Env():
 
     def __init__(self):
-        self.config = configparser.ConfigParser()
-        self.config.read("./config.ini")
-        self.player_count = int(self.config.get('Environment', 'Playercount'))
-        self._decksize = int(self.config.get('Environment', 'Decksize'))
+        # self.config = configparser.ConfigParser()
+        # self.config.read("./config.ini")
+        self.player_count = arguments.Playercount
+        self._decksize = arguments.Decksize
         self._terminal = 0
         self._reward = 0
         self._pot = [0, 0]
@@ -21,7 +22,7 @@ class Env():
         self._public_card = []
         self._specific_state = []
         self._info = ""
-        self._left_choices = [int(self.config.get('Environment', 'Choices')), int(self.config.get('Environment', 'Choices'))]
+        self._left_choices = [arguments.Choices, arguments.Choices]
 
         # dimensions
         self._state_shape = np.zeros((1, 3))
@@ -51,7 +52,7 @@ class Env():
         self._pot = [0, 0]
         self.pot = 0
         self._specific_state = []
-        self._left_choices = [int(self.config.get('Environment', 'Choices')), int(self.config.get('Environment', 'Choices'))]
+        self._left_choices = [arguments.Choices, arguments.Choices]
 
         for j in range(self.player_count):
             # Define return tuple for step()
@@ -125,7 +126,7 @@ class Env():
                 # raise
                 # Penalty for doing a raise but hasn't the right to
                 if self._left_choices[player_index] % 2 != 0:
-                    self._specific_state[player_index][2] = int(self.config.get('Agent', 'Penalty'))
+                    self._specific_state[player_index][2] = arguments.Penalty
                 self._left_choices[player_index] -= 2
                 if self._pot[player_index] <= self._pot[1 if player_index == 0 else 0]:
                     self._pot[player_index] += 1
