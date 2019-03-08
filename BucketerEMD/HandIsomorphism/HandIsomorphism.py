@@ -53,8 +53,22 @@ class HandIsomorphism():
                 comb(all_count,len(card)) * self.computer_rank_groups_index(temp_cards_list, all_count - len(card))
         return out_index
 
+    # 计算牌的index，card列表的形式，以字符串的形式表示牌，如[['As','Ah'],['','','']]
     def computer_card_index(self,card):
-        pass
+        suit_card = dict()
+        suit_card_index = dict()
+        for i in range(len(card)):
+            for j in card[i]:
+                if j[1] not in suit_card:
+                    suit_card[j[1]] = []
+                suit_card[j[1]].append(j[0])
+                
+
+
+
+
+
+
 
     def test_M_rank_index(self):
         cards = self.get_all_cards()
