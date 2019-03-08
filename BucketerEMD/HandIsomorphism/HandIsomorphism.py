@@ -6,7 +6,6 @@ from scipy.special import comb
 import copy
 
 
-
 class HandIsomorphism():
 
     def __init__(self):
@@ -17,6 +16,7 @@ class HandIsomorphism():
         self.suit_table = ['h', 's', 'd', 'c']
         self.suit_index_map = {'h': 0, 's': 1, 'd': 2, 'c': 3}
         self.card_to_string = CARD_TO_STRING()
+        self.cards = self.get_all_cards()
 
 
     def get_all_cards(self):
@@ -41,9 +41,24 @@ class HandIsomorphism():
             out_index = comb(card,len(card_list)) + self.computer_M_rank_index(temp_card_list)
         return out_index
 
+    # 计算K轮点数集组的索引，cards_list 表示双重列表，元素表示牌的rank编号，如[[13,2],[12,4,5]]
+    def computer_rank_groups_index(self, cards_list, all_count):
+        temp_cards_list = copy.deepcopy(cards_list)
+        if len(temp_cards_list) == 1:
+            out_index = self.computer_M_rank_index(temp_cards_list[0])
+        else:
+            card = temp_cards_list[0]
+            temp_cards_list.remove(card)
+            out_index = self.computer_M_rank_index(card) + \
+                comb(all_count,len(card)) * self.computer_rank_groups_index(temp_cards_list, all_count - len(card))
+        return out_index
+
+    def computer_card_index(self,card):
+        pass
+
     def test_M_rank_index(self):
         cards = self.get_all_cards()
-        test_card_comb = list(combinations(cards,2))
+        test_card_comb = list(combinations(cards, 2))
         for card in test_card_comb:
             temp = []
             for i in card:
@@ -51,65 +66,30 @@ class HandIsomorphism():
             out_index = self.computer_M_rank_index(temp)
             print(out_index)
 
-    # 计算K轮点数集组的索引，cards_list 表示双重列表，元素表示牌的rank编号，如[[13,2],[12,4,5]]
-    def computer_rank_groups_index(self, cards_list):
+    def test_rank_groups_index(self):
+        one_round_card = list(combinations(self.cards,2))
+        for one_card in one_round_card:
+            two_available_card = copy.deepcopy(self.cards)
+            for i in range(len(one_card)):
+                two_available_card.remove(one_card[i])
+            two_round_card = list(combinations(two_available_card,3))
+            for two_card in two_round_card:
+                test_card_comb = []
+                one_temp = []
+                two_temp = []
+                for i in one_card:
+                    one_temp.append(self.rank_index_map[i[0]])
+                test_card_comb.append(one_temp)
+                for i in two_card:
+                    two_temp.append(self.rank_index_map[i[0]])
+                test_card_comb.append(two_temp)
 
-        if len(cards_list) == 1:
-            out_index = self.computer_M_rank_index(cards_list[0])
-        
-
-
-
-        pass
-
-
-    #计算单个回合的牌的index，card 列表表示 如['As', 'Ah']
-    def computer_preround_card_index(self,card):
-        suit_card = dict()
-        suit_index = dict()
-        out_index = 0
-        for i in card:
-            if i[1] not in suit_card:
-                suit_card[i[1]] = []
-            suit_card[i[1]].append(i[0])
-        for id, value in suit_card.items():
-            suit_index[id] = self.computer_single_rank_card_index(value)
-
-        for id, value in suit_index.items():
-            out_index += comb(13,len(suit_card[id])) * value
-
-        return out_index
-
-    def test_pre_round_index(self):
-        all_cards = self.get_all_cards()
-        available_cards = list(combinations(all_cards,2))
-        print("available cards count:", comb(len(all_cards),2))
-        all_card_index = []
-        for card in available_cards:
-            card_ = list(card)
-            temp_index = self.computer_preround_card_index(card_)
-            print("--- card {0} --- index {1}".format(card_, temp_index))
-            if temp_index not in all_card_index:
-                all_card_index.append(temp_index)
-        print("cards index count:", len(all_card_index))
-
-
-
-
-
-
-    # 计算牌的index， card的表示是列表, [['As','Ah'],[],[],[]], 最大4个元素，表示4个回合的牌
-    def computer_card_index(self, card):
-        pass
-
-
-
-
-
-
+                out_index = self.computer_rank_groups_index(test_card_comb, 13)
+                print(out_index)
 
 
 
 if __name__ == "__main__":
     HandIsomorphism = HandIsomorphism()
-    HandIsomorphism.test_M_rank_index()
+    # HandIsomorphism.test_M_rank_index()
+    HandIsomorphism.test_rank_groups_index()
