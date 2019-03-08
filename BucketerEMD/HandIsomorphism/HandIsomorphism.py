@@ -3,16 +3,17 @@ from BucketerEMD.card_to_string_conversion import CARD_TO_STRING
 import BucketerEMD.settings as settings
 from itertools import combinations
 from scipy.special import comb
+import copy
 
 
 
 class HandIsomorphism():
 
     def __init__(self):
-        self.rank_index_map = {'A': 1, 'K': 2, 'Q': 3,
-                          'J': 4, 'T': 5, '9': 6,
-                          '8': 7, '7': 8, '6': 9,
-                          '5': 10, '4': 11, '3': 12, '2': 13}
+        self.rank_index_map = {'A': 13, 'K': 12, 'Q': 11,
+                          'J': 10, 'T': 9, '9': 8,
+                          '8': 7, '7': 6, '6': 5,
+                          '5': 4, '4': 3, '3': 2, '2': 1}
         self.suit_table = ['h', 's', 'd', 'c']
         self.suit_index_map = {'h': 0, 's': 1, 'd': 2, 'c': 3}
         self.card_to_string = CARD_TO_STRING()
@@ -27,24 +28,40 @@ class HandIsomorphism():
                 cards.append(i + j)
         return cards
 
-    # card_list 表示牌的列表，元素为字符串，如A, 计算当个rank牌的索引
-    def computer_single_rank_card_index(self, card_list):
-        M_rank = []
-        card_index = 0
-        card_number = len(card_list)
-        for card in card_list:
-            M_rank.append(self.rank_index_map[card])
-        M_rank.sort(reverse=True)
-
-        if card_number == 1:
-            card_index = M_rank[0]
+    # card_list 表示牌的列表，元素为牌的rank编号，如[13], [13,1], 计算当个rank牌的索引
+    def computer_M_rank_index(self, card_list):
+        card_list.sort(reverse = True)
+        temp_card_list = copy.deepcopy(card_list)
+        if len(temp_card_list) == 1:
+            out_index = temp_card_list[0]
         else:
-            for i in range(1, card_number+1):
-                if M_rank[i-1] < card_number -i + 1:
-                    card_index = card_index + 0
-                else:
-                    card_index = card_index + comb(M_rank[i-1], card_number-i+1)
-        return card_index
+            card = temp_card_list[0]
+            temp_card_list.remove(card)
+            # print("-----------",comb(card,len(card_list)))
+            out_index = comb(card,len(card_list)) + self.computer_M_rank_index(temp_card_list)
+        return out_index
+
+    def test_M_rank_index(self):
+        cards = self.get_all_cards()
+        test_card_comb = list(combinations(cards,2))
+        for card in test_card_comb:
+            temp = []
+            for i in card:
+                temp.append(self.rank_index_map[i[0]])
+            out_index = self.computer_M_rank_index(temp)
+            print(out_index)
+
+    # 计算K轮点数集组的索引，cards_list 表示双重列表，元素表示牌的rank编号，如[[13,2],[12,4,5]]
+    def computer_rank_groups_index(self, cards_list):
+
+        if len(cards_list) == 1:
+            out_index = self.computer_M_rank_index(cards_list[0])
+        
+
+
+
+        pass
+
 
     #计算单个回合的牌的index，card 列表表示 如['As', 'Ah']
     def computer_preround_card_index(self,card):
@@ -95,4 +112,4 @@ class HandIsomorphism():
 
 if __name__ == "__main__":
     HandIsomorphism = HandIsomorphism()
-    HandIsomorphism.test_pre_round_index()
+    HandIsomorphism.test_M_rank_index()
