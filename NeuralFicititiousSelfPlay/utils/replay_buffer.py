@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 ReplayBuffer for reinforcement and supervised learning.
 Provides:
@@ -24,7 +25,7 @@ class ReplayBuffer():
         self.buffer = deque()
         random.seed(random_seed)
         self.last_recent_batch = 0
-
+    # 保存强化学习的数据
     def add(self, s, a, r, s2, t):
         s = np.reshape(s, (1, 30))
         a = np.reshape(a, (1, 3))

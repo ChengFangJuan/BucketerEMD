@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from __future__ import division
 from keras.models import Sequential
 from keras.models import Model
 from keras.layers import Dense, Input
@@ -14,6 +15,7 @@ import tensorflow as tf
 import time
 import math
 from keras.layers.advanced_activations import LeakyReLU
+from keras.models import load_model
 
 
 class Agent():
@@ -33,6 +35,7 @@ class Agent():
 
         self.exploitability = 0
         self.iteration = 0
+        self.iteration_avg = 0
 
         # init parameters
         self.minibatch_size = int(self.config.get('Agent', 'MiniBatchSize'))
@@ -43,8 +46,8 @@ class Agent():
         self.epsilon_min = float(self.config.get('Agent', 'EpsilonMin'))
         self.gamma = float(self.config.get('Agent', 'Gamma'))
         self.omega = float(self.config.get('Agent', 'Omega'))
-        self.sgd_br = SGD(lr=self.lr_br)
-        self.sgd_ar = SGD(lr=self.lr_ar)
+        self.sgd_br = SGD(lr=self.lr_br) # 最优反应策略模型随机梯度下降
+        self.sgd_ar = SGD(lr=self.lr_ar) # 平均策略模型随机梯度下降
         self.target_model_update_rate = int(self.config.get('Agent', 'TargetModelUpdateRate'))
 
         self.iteration = 0
@@ -56,11 +59,11 @@ class Agent():
         # target network update counter
         self.target_br_model_update_count = 0
 
-        # reinforcement learning memory
+        # reinforcement learning memory 强化学习的记忆库
         self._rl_memory = ReplayBuffer.ReplayBuffer(int(self.config.get('Utils', 'Buffersize')),
                                                     int(self.config.get('Utils', 'Seed')))
 
-        # supervised learning memory
+        # supervised learning memory 监督学习的记忆库
         self._sl_memory = ReservoirBuffer.ReservoirBuffer(int(self.config.get('Utils', 'Buffersize')),
                                                           int(self.config.get('Utils', 'Seed')))
 
@@ -124,36 +127,43 @@ class Agent():
 
     def act_best_response(self, state):
         if random.random() > self.epsilon:
-            return self.best_response_model.predict(state)
+            a_t = self.best_response_model.predict(state)
+            a = self.boltzmann(a_t)
+            self.remember_best_response(state, a)  # 保存监督学习记忆库
+            return a_t
+            # return self.best_response_model.predict(state)
         else:
             return np.random.rand(1, 1, 3)
 
-    def play(self, policy, index, s2=None):
+    def play(self, policy, index, s2=None, batch = None):
+        self.batch = batch
         if s2 is None:
             s, a, r, s2, t = self.env.get_state(index)
-            self.reward += r
-            if np.average(a) != 0:
-                self.remember_for_rl(s, a, r, s2, t)
+            self.reward += r  # 记录玩家总共累计的输赢值
+            if np.average(a) != 0: # 排除大盲注刚开始的状态，对玩家的每次决策进行保存
+                self.remember_for_rl(s, a, r, s2, t) # 保存强化学习记忆库
                 self.game_step += 1
             if t:
                 return t
         else:  # because it's the initial state
-            t = False
+            t = False # 游戏是否结束
+
         if not t:
             if policy == 'a':
                 a = self.avg_strategy_model.predict(np.reshape(s2, (1, 1, 30)))
                 self.env.step(a, index)
-                self.played += 1
+                self.played += 1 # 执行动作的次数
             else:
                 a_t = self.act_best_response(np.reshape(s2, (1, 1, 30)))
                 # Evaluating the boltzmann distribution over Q Values
                 a = self.boltzmann(a_t)
                 self.env.step(a_t, index)
-                self.remember_best_response(s2, a_t)
+                # self.remember_best_response(s2, a_t) # 保存监督学习记忆库
                 self.played += 1
+
         if self.game_step % 128 == 0:
             self.update_strategy()
-        self.actions[np.argmax(a)] += 1
+        self.actions[np.argmax(a)] += 1 # 记录每个动作执行的次数
         return t
 
     def boltzmann(self, actions):
@@ -174,6 +184,7 @@ class Agent():
                 return t
         else:  # because it's the initial state
             t = False
+
         if not t:
             if policy == 'a':
                 a = self.avg_strategy_model.predict(np.reshape(s2, (1, 1, 30)))
@@ -214,7 +225,7 @@ class Agent():
         """
 
         if self._rl_memory.size() > self.minibatch_size:
-            self.iteration += 1
+            # self.iteration += 1
             s_batch, a_batch, r_batch, s2_batch, t_batch = self._rl_memory.sample_batch(self.minibatch_size)
 
             target = self.target_br_model.predict(s_batch)
@@ -232,11 +243,12 @@ class Agent():
                     target_ = r_batch[k] + self.gamma * Q_next
                     reward.append(target_)
 
-            # Evaluate exploitability
+            # Evaluate exploitability 计算可利用度，即最优反应策略的收益
             expl = []
             for k in range(len(target)):
                 expl.append(np.max(target[k]))
             self.exploitability = np.average(expl)
+            # --------------------------------------------------------
 
             for k in range(int(self.minibatch_size)):
                 target[0][0][np.argmax(a_batch[k])] = reward[k]
@@ -247,11 +259,16 @@ class Agent():
 
             self.temp = (1 + 0.02 * np.sqrt(self.iteration)) ** (-1)
 
-            self.update_br_target_network()
+            self.update_br_target_network() # 每训练150更新一次目标网络
 
             K.set_value(self.sgd_br.lr, self.lr_br / (1 + 0.003 * math.sqrt(self.iteration)))
 
             self.epsilon = self.epsilon ** 1/self.iteration
+
+            if  self.iteration % 1000 == 0:
+                print('--------- save model -------')
+                model_name = './models/' +self.name + '_' + "best_response_model" + "_" + str(self.iteration)
+                self.best_response_model.save(model_name)
 
     def update_avg_response_network(self):
         """
@@ -263,6 +280,13 @@ class Agent():
                                         epochs=2,
                                         verbose=0,
                                         callbacks=[self.tensorboard_sl])
+            self.iteration_avg += 1
+
+            if  self.iteration_avg % 1000 == 0:
+                print('----------- save model ------')
+                model_name = './models/' + self.name + '_' + "avg_strategy_model" + "_" + str(self.iteration_avg)
+                self.avg_strategy_model.save(model_name)
+
 
     def update_br_target_network(self):
         if self.target_br_model_update_count % self.target_model_update_rate == 0:

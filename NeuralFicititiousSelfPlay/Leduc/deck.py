@@ -20,7 +20,7 @@ class Card():
     def _print_human_style(self):
         print(str(self._named_suit + ' ' + self._named_rank))
 
-    @property # 限制范围
+    @property
     def rank(self):
         return self._rank
 

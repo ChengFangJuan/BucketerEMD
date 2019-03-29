@@ -15,7 +15,7 @@ class ReservoirBuffer():
         self.buffer = deque()
         random.seed(random_seed)
         self.last_recent_batch = 0
-
+    # 保存监督学习数据
     def add(self, s, a):
         s = np.reshape(s, (1, 30))
         a = np.reshape(a, (1, 3))

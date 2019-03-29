@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-# 建立所有牌的矩阵
 import numpy as np
 
 
