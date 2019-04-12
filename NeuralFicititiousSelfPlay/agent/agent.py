@@ -265,9 +265,9 @@ class Agent():
 
             self.epsilon = self.epsilon ** 1/self.iteration
 
-            if  self.iteration % 1000 == 0:
+            if  self.iteration % 10000 == 0:
                 print('--------- save model -------')
-                model_name = './models/' +self.name + '_' + "best_response_model" + "_" + str(self.iteration)
+                model_name = './models/' +self.name + '_' + "best_response_model" + "_" + str(self.iteration // 10000)
                 self.best_response_model.save(model_name)
 
     def update_avg_response_network(self):
@@ -282,9 +282,9 @@ class Agent():
                                         callbacks=[self.tensorboard_sl])
             self.iteration_avg += 1
 
-            if  self.iteration_avg % 1000 == 0:
+            if  self.iteration_avg % 10000 == 0:
                 print('----------- save model ------')
-                model_name = './models/' + self.name + '_' + "avg_strategy_model" + "_" + str(self.iteration_avg)
+                model_name = './models/' + self.name + '_' + "avg_strategy_model" + "_" + str(self.iteration_avg // 10000)
                 self.avg_strategy_model.save(model_name)
 
 

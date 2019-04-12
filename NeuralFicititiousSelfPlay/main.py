@@ -24,6 +24,7 @@ def train(env, player1, player2):
     players = [player1, player2]
     dealer = random.randint(0, 1)
     plotter = []
+    plt.ion()
 
     for i in range(int(Config.get('Common', 'Episodes'))):
         if dealer == 0: # 每局开始互换大小盲注的位置
@@ -80,8 +81,13 @@ def train(env, player1, player2):
             print("players 0 Exploitability: {}".format(players[0].average_payoff_br()))
             print("players 1 Exploitability: {}".format(players[1].average_payoff_br()))
             plotter.append(ex)
+            if 'sca' in globals():
+                sca.remove()
+            sca = plt.plot(plotter);plt.pause(0.05)
 
-    plt.plot(plotter)
+
+    # plt.plot(plotter)
+    plt.ioff()
     plt.show()
     time.sleep(60)
 

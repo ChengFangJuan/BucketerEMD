@@ -110,6 +110,39 @@ class Env():
             # Set cards vector entry to 1 where the picked up card matches
             self.specific_cards[k][self.round][card_index] = 1
 
+    def decode_state_string(self,p_index, history, card):
+        action_string = ''
+        action_index_string = {0: 'c', 1: 'r'}
+        if p_index == 0:
+            o_index = 1
+        else:
+            o_index = 0
+        if np.count_nonzero(card[1]) == 1 or self.round == 0:
+            if self.round == 0:
+                card_string = str(3-np.argmax(card[0]))
+            else:
+                card_string = str(3-np.argmax(card[0])) * 2
+        else:
+            hand_card = np.argmax(card[0])
+            other_card = np.argmin(card[1])
+            board_card = [0,1,2]
+            board_card.remove(hand_card)
+            board_card.remove(other_card)
+            card_string = str(3-hand_card) + str(3-board_card[0])
+
+        for i in range(self.max_rounds):
+            for j in range(self.max_raises):
+                p_action = history[p_index][i][j]
+                o_action = history[o_index][i][j]
+                if np.count_nonzero(p_action) != 0:
+                    action_string += action_index_string[np.argmax(p_action)]
+                if np.count_nonzero(o_action) != 0:
+                    action_string += action_index_string[np.argmax(o_action)]
+        out = card_string + action_string
+        return out
+
+
+
     def get_state(self, p_index):
         cards = self.specific_cards[p_index]
         state = np.concatenate((self.history.flatten(), self.specific_cards[p_index].flatten()))
@@ -119,11 +152,13 @@ class Env():
         state = np.reshape(state, (1, 1, 30))
         action = np.reshape(action, (1, 1, 3))
 
+        state_string = self.decode_state_string(p_index,self.history,self.specific_cards[p_index])
+
         if self.terminated:
-            return self.s[p_index], action, self.reward[p_index], state, self.terminated
+            return self.s[p_index], action, self.reward[p_index], state, self.terminated, state_string
         else:
             # Return zero as reward because there is no
-            return self.s[p_index], action, 0, state, self.terminated # state包括历史动作和可见牌的信息
+            return self.s[p_index], action, 0, state, self.terminated, state_string # state包括历史动作和可见牌的信息
 
     def do_action(self, action, p_index):
 
@@ -217,15 +252,6 @@ class Env():
                     self.public_card_index = self.deck.pick_up().rank
                     self.specific_cards[p_index][(self.round + 1)][self.public_card_index] = 1
                     self.specific_cards[o_index][(self.round + 1)][self.public_card_index] = 1
-                    # print("This the new state:")
-                    # print("Player{} - {}".format(p_index, self.specific_cards[p_index][1]))
-                    # print("Player{} - {}".format(o_index, self.specific_cards[o_index][1]))
-
-                    # Determine reward from first round
-                    # if p_index == self.dealer:
-                    #     self.reward[p_index] = self.overall_raises
-                    #
-                    # self.reward[o_index] = np.sum(self.overall_raises)
                     self.round = 1
 
                     # Set raises and calls to zero - in new round nothing happened
